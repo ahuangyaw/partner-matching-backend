@@ -29,7 +29,7 @@ public class UserServiceTest {
     @Test
     public void testAddUser() {
         User user = new User();
-        user.setUsername("dogYupi");
+        user.setUsername("ahuangya");
         user.setUserAccount("123");
         user.setAvatarUrl("https://636f-codenav-8grj8px727565176-1256524210.tcb.qcloud.la/img/logo.png");
         user.setGender(0);
@@ -41,7 +41,6 @@ public class UserServiceTest {
         Assertions.assertTrue(result);
     }
 
-    // https://www.code-nav.cn/
 
     /**
      * 测试更新用户
@@ -88,7 +87,7 @@ public class UserServiceTest {
         String userAccount = "ahuangya";
         String userPassword = "12345678";
         String checkPassword = "12345678";
-        String planetCode = "2";
+        String planetCode = "1";
         long result = userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
         Assertions.assertEquals(-1, result);
         userAccount = "ah";

@@ -19,7 +19,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -203,31 +205,45 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (CollectionUtils.isEmpty(tagNameList)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        //用sql查询标签
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        List<User> userList = userMapper.selectList(queryWrapper);
+        Gson gson = new Gson();
+
+        //在内存中查询标签
+//        return userList.parallelStream().filter ， parallelStream 并发流,要用线程池,默认是用Java1.7的
+        return userList.stream().filter(user -> {
+            String tagStr = user.getTags();
+
+            Set<String> tempNameSet = gson.fromJson(tagStr, new TypeToken<Set<String>>(){}.getType());
+            tempNameSet = Optional.ofNullable(tempNameSet).orElse(new HashSet<>());
+            for (String tagName : tempNameSet){
+                if (!tempNameSet.contains(tagName)){
+                    return false;
+                }
+            }
+            return true;
+        }).map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据标签搜索用户(SQL查询)
+     * @param tagNameList
+     * @return
+     */
+    @Deprecated
+    public List<User> searchUserTagsBySQL(List<String> tagNameList){
+        if (CollectionUtils.isEmpty(tagNameList)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+
+        //用sql查询标签
         for (String tagName : tagNameList) {
             queryWrapper = queryWrapper.like("tags", tagName);
         }
         List<User> userList = userMapper.selectList(queryWrapper);
         return userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
 
-        //在内存中查询标签
-//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-//        List<User> userList = userMapper.selectList(queryWrapper);
-//        Gson gson = new Gson();
-//        return userList.stream().filter(user -> {
-//            String tagName = user.getTags();
-//            if (StringUtils.isBlank(tagName)){
-//                return false;
-//            }
-//            Set<String> tempNameSet = gson.fromJson(tagName, new TypeToken<Set<String>>(){}.getType());
-//            for (String tag : tempNameSet){
-//                if (!tempNameSet.contains(tagName)){
-//                    return false;
-//                }
-//            }
-//            return true;
-//        }).map(this::getSafetyUser).collect(Collectors.toList());
     }
 
 }
