@@ -1,20 +1,35 @@
 # 公共配置文件
 spring:
+  mvc:
+    path-match:
+      matching-strategy: ant_path_matcher
+  profiles:
+    active: dev
   application:
-    name: partner-matching-backend
+    name: PartnerMatchingBackend
   # DataSource Config
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/partner_matching
     username: root
-    password: jiahua88888888
+    password: 123456
+  # redis配置
+  redis:
+    port:  6379
+    host:  localhost
+    database: 0
+
   # session 失效时间
   session:
     timeout: 86400
+    store-type: redis
 server:
   port: 8080
   servlet:
     context-path: /api
+    session:
+      cookie:
+        domain: # 可以种session
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false
@@ -24,4 +39,22 @@ mybatis-plus:
       logic-delete-field: isDelete # 全局逻辑删除的实体字段名(since 3.3.0,配置后可以忽略不配置步骤2)
       logic-delete-value: 1 # 逻辑已删除值(默认为 1)
       logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
-
+knife4j:
+  enable: true
+  openapi:
+    title: 用户中心
+    description: "接口文档
+    # aaa"
+    email: tao_hwang@qq.com
+    concat: 黄志涛
+    url: https://www.huangzhitao.asia
+    version: v2.0
+    license: Apache 2.0
+    license-url: https://stackoverflow.com/
+    terms-of-service-url: https://stackoverflow.com/
+    group:
+      test1:
+        group-name: 分组名称
+        api-rule: package
+        api-rule-resources:
+          - com.knife4j.demo.new3

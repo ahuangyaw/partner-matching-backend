@@ -1,7 +1,6 @@
 package asia.huangzhitao.partnermatchingbackend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.fasterxml.jackson.databind.ser.Serializers;
 import asia.huangzhitao.partnermatchingbackend.common.BaseResponse;
 import asia.huangzhitao.partnermatchingbackend.common.ErrorCode;
 import asia.huangzhitao.partnermatchingbackend.common.ResultUtils;
@@ -10,12 +9,13 @@ import asia.huangzhitao.partnermatchingbackend.model.domain.User;
 import asia.huangzhitao.partnermatchingbackend.model.domain.request.UserLoginRequest;
 import asia.huangzhitao.partnermatchingbackend.model.domain.request.UserRegisterRequest;
 import asia.huangzhitao.partnermatchingbackend.service.UserService;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +29,7 @@ import static asia.huangzhitao.partnermatchingbackend.contant.UserConstant.USER_
  */
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = {"http://localhost:8082"})
 public class UserController {
 
     @Resource
@@ -127,6 +128,22 @@ public class UserController {
         List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
         return ResultUtils.success(list);
     }
+
+    /**
+     * 查询标签列表
+     * @param tagNameList
+     * @return
+     */
+    @GetMapping("/search/tags")
+    public BaseResponse<List<User>> searchUsersByTags(@RequestParam(required = false) List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        List<User> userList = userService.searchUsersByTags(tagNameList);
+        return ResultUtils.success(userList);
+    }
+
+
 
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
