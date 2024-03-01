@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static asia.huangzhitao.partnermatchingbackend.contant.UserConstant.ADMIN_ROLE;
 import static asia.huangzhitao.partnermatchingbackend.contant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -180,6 +181,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setUserStatus(originUser.getUserStatus());
         safetyUser.setCreateTime(originUser.getCreateTime());
         safetyUser.setTags(originUser.getTags());
+        safetyUser.setProfile(originUser.getProfile());
         return safetyUser;
     }
 
@@ -223,6 +225,70 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             }
             return true;
         }).map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+    /**
+     * 更新用户信息
+     * @param user
+     * @return
+     */
+    @Override
+    public int updateUser(User user,User userLogin) {
+        long userId = user.getId();
+        if (userId <= 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //查询，如果是管理员，则可以修改全部用户，否则只能修改自己的信息
+        //判断权限，仅管理员和自己可修改
+        if (isAdmin(userLogin) && userId !=userLogin.getId()){
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        User olduser = userMapper.selectById(userId);
+        if (olduser == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        return userMapper.updateById(user);
+    }
+
+    /**
+     * 获取用户信息
+     * @param request
+     * @return
+     */
+    @Override
+    public User getUserLogin(HttpServletRequest request) {
+        if (request == null){
+            return null;
+        }
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (userObj==null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        return (User) userObj;
+    }
+
+    /**
+     * 是否为管理员
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    public boolean isAdmin(HttpServletRequest request) {
+        // 仅管理员可查询
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User user = (User) userObj;
+        return user != null && user.getUserRole() == ADMIN_ROLE;
+    }
+
+    /**
+     * 是否为管理员
+     *
+     * @return
+     */
+    @Override
+    public boolean isAdmin(User userLogin) {
+        return userLogin != null && userLogin.getUserRole() == ADMIN_ROLE;
     }
 
     /**

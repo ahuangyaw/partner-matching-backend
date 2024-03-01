@@ -29,7 +29,7 @@ server:
     context-path: /api
     session:
       cookie:
-        domain: # 可以种session
+        domain: localhost  # 可以种session
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false
